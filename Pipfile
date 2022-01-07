@@ -6,6 +6,13 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
+numpy = "*"
+dash = "*"
+dash-bootstrap-components = "*"
+pandas = "*"
+opencv-python = "*"
+ipykernel = "*"
+plotly = "*"
 
 [requires]
 python_version = "3.6"
