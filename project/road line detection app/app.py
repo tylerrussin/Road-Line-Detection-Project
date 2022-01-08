@@ -87,9 +87,14 @@ def draw_lines(image, lines):
             cv2.line(lines_image, (x1, y1), (x2, y2), [255,0,0], 10)
     return lines_image
 
+def vconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
+    w_min = min(im.shape[1] for im in im_list)
+    im_list_resize = [cv2.resize(im, (w_min, int(im.shape[0] * w_min / im.shape[1])), interpolation=interpolation) for im in im_list]
+    return cv2.vconcat(im_list_resize)
+
 def gen_frames():
     # Importing the video
-    video = cv2.VideoCapture('data/1.MOV')
+    video = cv2.VideoCapture('data/2.MOV')
 
     # Checking if video opened
     if video.isOpened() == False:
@@ -129,11 +134,19 @@ def gen_frames():
                 dark_lines = draw_lines(frame_copy, averaged_lines)
                 lanes = cv2.addWeighted(frame_copy, 0.8, dark_lines, 1, 1)
 
+                # Merging for final output
+                # merged = cv2.vconcat([lanes, edges])
+                # Resizing image
+                # lanes = resize(lanes)
+                # edges = resize(edges)
+                # merged = np.concatenate((lanes, lanes), axis=0)
+
+                
                 # me not understanding how things work :)
                 frame = lanes
 
                 # Preparing for export
-                ret, buffer = cv2.imencode('.jpg', cv2.flip(frame,1))
+                ret, buffer = cv2.imencode('.jpg', frame)
                 frame = buffer.tobytes()
                 yield (b'--frame\r\n'
                         b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
@@ -148,9 +161,14 @@ def gen_frames():
 def video_feed():
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+# @server.route('/video_feed2')
+# def video_feed():
+#     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 app.layout = html.Div([
    html.H1("Webcam Test"),
-   html.Img(src="/video_feed")
+   html.Img(src="/video_feed"),
+#    html.Img(src="/video_feed2")
 ])
 
 if __name__ == '__main__':
