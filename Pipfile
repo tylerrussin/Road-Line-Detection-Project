@@ -7,12 +7,10 @@ verify_ssl = true
 
 [packages]
 numpy = "*"
+opencv-python = "*"
+plotly-express = "*"
 dash = "*"
 dash-bootstrap-components = "*"
-pandas = "*"
-opencv-python = "*"
-ipykernel = "*"
-plotly = "*"
 
 [requires]
 python_version = "3.6"
