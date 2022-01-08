@@ -84,14 +84,10 @@ def gen_frames():
 def video_feed():
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-# @server.route('/video_feed2')
-# def video_feed():
-#     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 app.layout = html.Div([
    html.H1("Webcam Test"),
-   html.Img(src="/video_feed"),
-#    html.Img(src="/video_feed2")
+   html.Img(src="/video_feed")
 ])
 
 if __name__ == '__main__':

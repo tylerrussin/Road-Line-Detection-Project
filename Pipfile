@@ -6,11 +6,10 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-numpy = "*"
 opencv-python = "*"
-plotly-express = "*"
 dash = "*"
 dash-bootstrap-components = "*"
+plotly-express = "*"
 
 [requires]
 python_version = "3.6"
