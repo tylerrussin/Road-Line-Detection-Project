@@ -1,7 +1,7 @@
 import cv2
 
-def resize(image):
+def resize(image, x, y):
     # Resizing image
-    dim = (800, 600)
+    dim = (x, y)
     image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
     return image
