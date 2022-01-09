@@ -34,7 +34,7 @@ from flask import Flask, Response
 
 # Acessing Credentials
 config = configparser.ConfigParser()
-config.read('credentials/credentials.ini')
+config.read('../credentials/credentials.ini')
 ACCESS_KEY_ID = config['Amazon S3 Bucket tyler9937']['ACCESS_KEY_ID']
 SECRET_ACCESS_KEY = config['Amazon S3 Bucket tyler9937']['SECRET_ACCESS_KEY']
 
