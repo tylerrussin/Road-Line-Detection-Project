@@ -2,8 +2,6 @@
 import dash_bootstrap_components as dbc
 from dash import dcc
 
-# Imports from this application
-from app import app
 
 # Infor to be displayed on the process page of the website
 column1 = dbc.Col(
