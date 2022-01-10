@@ -74,11 +74,14 @@ from flask import Flask, Response
 
 
 # Creating Flask and Dash servers
-def run_app():
+
     # server = Flask(__name__)
-    app = dash.Dash(__name__, external_stylesheets=external_stylesheets, meta_tags=meta_tags)
-    app.config.suppress_callback_exceptions = True
-    app.title = 'Road Lane Detection App' # Browser Title
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets, meta_tags=meta_tags)
+app.config.suppress_callback_exceptions = True
+app.title = 'Road Lane Detection App' # Browser Title
+server = app.server
+# Render test
+app.layout = html.Div('Hello World')
     
     
 
@@ -273,7 +276,5 @@ def run_app():
     #     else:
     #         return dcc.Markdown('## Page not found')
 
-    # Render test
-    app.layout = html.Div('Hello World')
+
     
-    return app.server
