@@ -112,101 +112,101 @@ def get_scene_names():
     print('Connection is closed.')
     return scene_names
 
-# # Amazon S3 Bucket video streaming and OpenCV Video Processing
-# def process_stream(mask_type, width, height, test):
-#     # Fetching URL stream from amazon s3 bucket
-#     url = S3_CLIENT.generate_presigned_url('get_object', 
-#                                            Params = {'Bucket': BUCKET_NAME, 'Key': test}, 
-#                                            ExpiresIn = 30) #this url will be available for 600 seconds
+# Amazon S3 Bucket video streaming and OpenCV Video Processing
+def process_stream(mask_type, width, height, test):
+    # Fetching URL stream from amazon s3 bucket
+    url = S3_CLIENT.generate_presigned_url('get_object', 
+                                           Params = {'Bucket': BUCKET_NAME, 'Key': test}, 
+                                           ExpiresIn = 30) #this url will be available for 600 seconds
 
-#     # Importing the video
-#     video = cv2.VideoCapture(url)
+    # Importing the video
+    video = cv2.VideoCapture(url)
 
-#     # Checking if video opened
-#     if video.isOpened() == False:
-#         print('Error opening video file')
+    # Checking if video opened
+    if video.isOpened() == False:
+        print('Error opening video file')
 
-#     while video.isOpened():
+    while video.isOpened():
 
-#         ret, frame = video.read()
+        ret, frame = video.read()
 
-#         if ret:
-#             try:
-#                 # Resizing image
-#                 resized = resize(frame, width, height)
+        if ret:
+            try:
+                # Resizing image
+                resized = resize(frame, width, height)
 
-#                 if mask_type == 'test':
-#                     resized = resize(resized, 400, 300)
-#                     frame = resized
+                if mask_type == 'test':
+                    resized = resize(resized, 400, 300)
+                    frame = resized
                     
-#                     # Preparing for export
-#                     ret, buffer = cv2.imencode('.jpg', frame)
-#                     frame = buffer.tobytes()
-#                     yield (b'--frame\r\n'
-#                             b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                    # Preparing for export
+                    ret, buffer = cv2.imencode('.jpg', frame)
+                    frame = buffer.tobytes()
+                    yield (b'--frame\r\n'
+                            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-#                 # Make copy
-#                 frame_copy = np.copy(resized)
+                # Make copy
+                frame_copy = np.copy(resized)
                 
-#                 # Greyscale
-#                 greyed = grey(frame_copy)
+                # Greyscale
+                greyed = grey(frame_copy)
 
-#                 # Edge detection
-#                 edges = canny(greyed)
+                # Edge detection
+                edges = canny(greyed)
 
-#                 if mask_type == 'edge_detection':
-#                     resized = resize(edges, 400, 300)
-#                     frame = resized
+                if mask_type == 'edge_detection':
+                    resized = resize(edges, 400, 300)
+                    frame = resized
 
-#                     # Preparing for export
-#                     ret, buffer = cv2.imencode('.jpg', frame)
-#                     frame = buffer.tobytes()
-#                     yield (b'--frame\r\n'
-#                             b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                    # Preparing for export
+                    ret, buffer = cv2.imencode('.jpg', frame)
+                    frame = buffer.tobytes()
+                    yield (b'--frame\r\n'
+                            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-#                 # Gaussian blur
-#                 blured = blur(edges)
+                # Gaussian blur
+                blured = blur(edges)
 
-#                 # Regionize
-#                 isolated = region(blured)
+                # Regionize
+                isolated = region(blured)
 
-#                 # Apply HoughLines
-#                 lines = hough_lines(isolated)
+                # Apply HoughLines
+                lines = hough_lines(isolated)
 
-#                 # Averages of lines
-#                 averaged_lines = average(frame_copy, lines)
+                # Averages of lines
+                averaged_lines = average(frame_copy, lines)
 
-#                 # Display lines
-#                 dark_lines = draw_lines(frame_copy, averaged_lines)
-#                 lanes = cv2.addWeighted(frame_copy, 0.8, dark_lines, 1, 1)
+                # Display lines
+                dark_lines = draw_lines(frame_copy, averaged_lines)
+                lanes = cv2.addWeighted(frame_copy, 0.8, dark_lines, 1, 1)
        
-#                 if mask_type == 'predict_lines':
-#                    resized = resize(lanes, 600, 337)
-#                    frame = resized
+                if mask_type == 'predict_lines':
+                   resized = resize(lanes, 600, 337)
+                   frame = resized
 
                 
-#                 # Preparing for export
-#                 ret, buffer = cv2.imencode('.jpg', frame)
-#                 frame = buffer.tobytes()
-#                 yield (b'--frame\r\n'
-#                         b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-#             except Exception as e:
-#                 resized = resize(frame, 600, 337)
-#                 frame = resized
-#                 # Preparing for export
-#                 ret, buffer = cv2.imencode('.jpg', frame)
-#                 frame = buffer.tobytes()
-#                 yield (b'--frame\r\n'
-#                         b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                # Preparing for export
+                ret, buffer = cv2.imencode('.jpg', frame)
+                frame = buffer.tobytes()
+                yield (b'--frame\r\n'
+                        b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            except Exception as e:
+                resized = resize(frame, 600, 337)
+                frame = resized
+                # Preparing for export
+                ret, buffer = cv2.imencode('.jpg', frame)
+                frame = buffer.tobytes()
+                yield (b'--frame\r\n'
+                        b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
             
-#         else:
-#             pass
+        else:
+            pass
 
 
-# # Using flask routing to connect to video stream
-# @server.route('/video_stream_predict_lines/<scene_name>')
-# def video_stream_predict_lines(scene_name):
-#     return Response(process_stream('predict_lines', 800, 600, scene_name), mimetype='multipart/x-mixed-replace; boundary=frame')
+# Using flask routing to connect to video stream
+@server.route('/video_stream_predict_lines/<scene_name>')
+def video_stream_predict_lines(scene_name):
+    return Response(process_stream('predict_lines', 800, 600, scene_name), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 # For the dropdown menu
@@ -238,7 +238,7 @@ column1 = dbc.Col(
 # Hosts the video stream
 column2 = dbc.Col(
     [
-    #    html.Div(html.Img(id='output'))
+       html.Div(html.Img(id='output'))
     ]
 )
 
@@ -253,12 +253,12 @@ app.layout = html.Div([
     footer               
 ])
 
-# # Video Stream routing
-# @app.callback(Output('output', 'src'),
-#               [Input('quantity_dropdown', 'value')])
+# Video Stream routing
+@app.callback(Output('output', 'src'),
+              [Input('quantity_dropdown', 'value')])
 
-# def play_video(scene_name):
-#     return "/video_stream_predict_lines/" + scene_name
+def play_video(scene_name):
+    return "/video_stream_predict_lines/" + scene_name
 
 # URL routing
 @app.callback(Output('page-content', 'children'),
