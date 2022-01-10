@@ -1,1 +1,1 @@
-web: gunicorn run:server --preload -b 0.0.0.0:5000
+web: gunicorn run:server_test --preload -b 0.0.0.0:5000
