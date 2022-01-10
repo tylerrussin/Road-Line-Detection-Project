@@ -15,7 +15,7 @@ footer = dbc.Container(
                                                                                                                         "padding-left": "10px",
                                                                                                                         "color": "rgb(17,157,255)"
                                                                                                                         }), 
-                    html.A(html.I(className='fab fa-github-square mr-1'), href='https://github.com/Tyler9937/Tanzanian-Ministry-of-Water-Dataset-App', style={
+                    html.A(html.I(className='fab fa-github-square mr-1'), href='https://github.com/tylerrussin/Road-Line-Detection-Project', style={
                                                                                                                         "padding-top": "2px",
                                                                                                                         "padding-right": "2px",
                                                                                                                         "padding-bottom": "2px",

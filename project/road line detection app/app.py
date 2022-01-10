@@ -1,3 +1,4 @@
+# Image Processing functions
 from functions.Resize import resize
 from functions.Canny import canny
 from functions.Grey import grey
@@ -7,31 +8,37 @@ from functions.Hough_Lines import hough_lines
 from functions.Average import average
 from functions.Draw_Lines import draw_lines
 
-from pages import process
+# Web app structures
 from layout_structures.Navbar import navbar
 from layout_structures.Footer import footer
 from layout_structures.External_Stylesheets import external_stylesheets
 from layout_structures.Meta_Tags import meta_tags
 
+# Database connection functions
+from database_functions.Connect import connect
+
+# Addtional web pages for app
+from pages import process
+
+# For parsing credentials
 import configparser
 
-import cv2
-import pandas as pd
-import numpy as np
-
-import plotly.express as px
-
+# Accessing s3 bucket
 import boto3
 
+# Standard imports
+import cv2
+import numpy as np
+
+# Dash app
 import dash
 from dash import dcc
 from dash import html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 
+# Backend flask import for video stream
 from flask import Flask, Response
-
-import psycopg2
 
 
 # Acessing Credentials
@@ -57,25 +64,11 @@ TEMP_KEY = 'scene_1.mp4'
 # Creating Flask and Dash servers
 server = Flask(__name__)
 app = dash.Dash(__name__, server = server, external_stylesheets=external_stylesheets, meta_tags=meta_tags)
-app.config.suppress_callback_exceptions = True # see https://dash.plot.ly/urls
-app.title = 'Tanzanian Ministry of Water Data Analysis' # appears in browser title bar
+app.config.suppress_callback_exceptions = True
+app.title = 'Road Lane Detection App' # Browser Title
 
 
-def connect(DATABASE, USERNAME, PASSWORD, HOST):
-    """ Connect to the PostgreSQL database server """
-    elephantsql_client = None
-    try:
-        # connect to the PostgreSQL server
-        print('Connecting to the PostgreSQL database...')
-
-        # Connect to ElephantSQL-hosted PostgreSQL
-        elephantsql_client = psycopg2.connect(dbname=DATABASE, user=USERNAME, password=PASSWORD, host=HOST)
-
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-        sys.exit(1)
-    return elephantsql_client
-
+# PostgresSQL Data Base call for bringing in video data
 def get_scene_names():
     # Creating the connection to database
     elephantsql_client = connect(DATABASE, USERNAME, PASSWORD, HOST)
@@ -95,8 +88,6 @@ def get_scene_names():
     for tup in scene_list:
         scene_names.append({'label': tup[0], 'value': tup[0]})
 
-
-
     # Close communication with the PostgreSQL database server
     cur.close()
 
@@ -108,7 +99,7 @@ def get_scene_names():
     print('Connection is closed.')
     return scene_names
 
-
+# Amazon S3 Bucket video streaming and OpenCV Video Processing
 def process_stream(mask_type, width, height, test):
     # Fetching URL stream from amazon s3 bucket
     url = S3_CLIENT.generate_presigned_url('get_object', 
@@ -131,7 +122,8 @@ def process_stream(mask_type, width, height, test):
                 # Resizing image
                 resized = resize(frame, width, height)
 
-                if mask_type == 'original':
+                if mask_type == 'test':
+                    resized = resize(resized, 400, 300)
                     frame = resized
                     
                     # Preparing for export
@@ -150,7 +142,8 @@ def process_stream(mask_type, width, height, test):
                 edges = canny(greyed)
 
                 if mask_type == 'edge_detection':
-                    frame = edges
+                    resized = resize(edges, 400, 300)
+                    frame = resized
 
                     # Preparing for export
                     ret, buffer = cv2.imencode('.jpg', frame)
@@ -175,15 +168,17 @@ def process_stream(mask_type, width, height, test):
                 lanes = cv2.addWeighted(frame_copy, 0.8, dark_lines, 1, 1)
        
                 if mask_type == 'predict_lines':
-                   frame = lanes
+                   resized = resize(lanes, 600, 337)
+                   frame = resized
 
+                
                 # Preparing for export
                 ret, buffer = cv2.imencode('.jpg', frame)
                 frame = buffer.tobytes()
                 yield (b'--frame\r\n'
                         b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
             except Exception as e:
-                resized = resize(frame, width, height)
+                resized = resize(frame, 600, 337)
                 frame = resized
                 # Preparing for export
                 ret, buffer = cv2.imencode('.jpg', frame)
@@ -195,39 +190,31 @@ def process_stream(mask_type, width, height, test):
             pass
 
 
-@server.route('/video_stream_predict_lines/<test>')
-def video_stream_predict_lines(test):
-
-    return Response(process_stream('predict_lines', 800, 600, test), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-# @server.route('/video_stream_edge_detection')
-# def video_stream_edge_detection():
-#     return Response(process_stream('edge_detection', 400, 300), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-# @server.route('/video_stream_original')
-# def video_stream_original():
-#     return Response(process_stream('original', 400, 300), mimetype='multipart/x-mixed-replace; boundary=frame')
+# Using flask routing to connect to video stream
+@server.route('/video_stream_predict_lines/<scene_name>')
+def video_stream_predict_lines(scene_name):
+    return Response(process_stream('predict_lines', 800, 600, scene_name), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
+# For the dropdown menu
 quantity_dropdown = html.Div(
     [
-        
         dcc.Dropdown(
             id='quantity_dropdown',
             options=get_scene_names(),
             value='scene_1.mp4'
         ),
-    ]
+    ],
 )
 
+# Hosts webpage description and dropdown menu
 column1 = dbc.Col(
     [
         dcc.Markdown(
             """
         
-            ## Looking into Classification
-            In this web application, we explore the key concepts of Data Wrangling and Classification. Scoring metrics such as Precision/Recall and ROC AUC scores are utilized. Pipeline building techniques associated with Data Preprocessing, Hyperparameter Tuning, and Cross-Validation are implemented.
-            This application describes the competition that was entered, the process for  how modeling was done, and has an interactive model demo
+            ## Model Overview
+             In this web application, we demonstrate road lane identification using OpenCV tools such as edge detection, and Hough line detection. We find that our implementation is effective in perfect weather and road conditions. The model struggles with sun glare, shadows, patchy roads, multiple lanes, and traffic. We consider this model a good baseline and look forward to further research in the field. The video data was collected by our team on western Los Angeles roads. The videos are being streamed from an Amazon S3 bucket and a PostgreSQL database hosted on Elephantsql. Below you can select different video scenes and observe how our model performed. The two blue lines are our model's predictionand are being applied in real time.
             """
         ),
         quantity_dropdown
@@ -235,15 +222,14 @@ column1 = dbc.Col(
     ],
 )
 
+# Hosts the video stream
 column2 = dbc.Col(
     [
-       html.Div(html.Img(id='output')),
-    #    html.Div(html.Img(src="/video_stream_edge_detection"),style={'float': 'left'}),
-    #    html.Div(html.Img(src="/video_stream_original", style={'float': 'right'})),
-
+       html.Div(html.Img(id='output'))
     ]
 )
 
+# To be displayed on index page
 layout = dbc.Row([column1, column2])
 
 # Rendering the webpage
@@ -254,12 +240,11 @@ app.layout = html.Div([
     footer               
 ])
 
-# URL routing
+# Video Stream routing
 @app.callback(Output('output', 'src'),
               [Input('quantity_dropdown', 'value')])
 
 def play_video(scene_name):
-    
     return "/video_stream_predict_lines/" + scene_name
 
 # URL routing
@@ -275,4 +260,4 @@ def display_page(pathname):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()

@@ -5,34 +5,24 @@ from dash import dcc
 # Imports from this application
 from app import app
 
+# Infor to be displayed on the process page of the website
 column1 = dbc.Col(
     [
         dcc.Markdown(
             """
             # Road Lane Detection with Computer Vision
 
+            The following is a walk-through of our process of masking predicted lines onto our video data. With OpenCV, we process videos frame by frame.
+
+            **Overview**
             - OpenCV
             - Frame Masking
             - Hough Line Tranformations
-            - GTA Game Data Collection
             - Real World Driving Data Collection
-
-            ### Experimenting with OpenCV masking
-
-            **Original Frame**
-
-            ![](../assets/original.png)
-
-            **Grayscale Frame**
-            
-            ![](../assets/grey.png)
-
-            **Edge Detection Frame**
-            
-            ![](../assets/edge.png)
 
             **Resize frame**
 
+            Resizing the video frames to be in a standardized format for working with the video feed
             ```
             def resize(image):
 
@@ -44,6 +34,8 @@ column1 = dbc.Col(
 
             **Edge detection**
 
+            Preforming an edge detection mask over the frame to simplify the data in a format that lines can begin to be discovered
+
             ```
             def canny(image):
             # Applying Canny edge detection (threshold values will have to be tweaked)
@@ -51,8 +43,9 @@ column1 = dbc.Col(
             return image
             ```
 
-            **Grayscale conversion**
+            **Greyscale conversion**
 
+            Converting image to greyscale for data simplicity
             ```
             def grey(image):
             # Processing to Grayscale (simpiler data)
@@ -62,6 +55,7 @@ column1 = dbc.Col(
 
             **Gaussian Blur**
 
+            This is a blurring technic that we are utilizing to blur pixels together so that the Hough Line implementation is more performant
             ```
             def blur(image):
             # Adding Gaussian Blur (much more effective when applied after edge detection)
@@ -70,6 +64,8 @@ column1 = dbc.Col(
             ```
 
             **Region masking**
+
+            Cutting out most of the frame leaving only the pixels that exist where road lanes could be
 
             ```
             def region(image):
@@ -84,6 +80,8 @@ column1 = dbc.Col(
 
             **Hough Lines Algorithm**
 
+            Apply the line algorithm. It searches for lines within the frame given certain conditions
+
             ```
             def hough_lines(image):
             # Find all lines
@@ -92,6 +90,8 @@ column1 = dbc.Col(
             ```
 
             **Average Lines**
+
+            Averaging all the lines found and finding the two lines found to determine the two lines that are likely our lane lines
 
             ```
             def make_points(image, average):
@@ -127,6 +127,8 @@ column1 = dbc.Col(
             ```
 
             **Display Lines**
+
+            Displaying the discovered lines onto our source frame
 
             ```
             def draw_lines(image, lines):
