@@ -43,30 +43,30 @@ from flask import Flask, Response
 
 # For Use when working locally
 
-# Acessing Credentials
-config = configparser.ConfigParser()
-config.read('credentials/credentials.ini')
+# # Acessing Credentials
+# config = configparser.ConfigParser()
+# config.read('credentials/credentials.ini')
 
-# S3 Bucket Credentials
-ACCESS_KEY_ID = config['Amazon S3 Bucket tyler9937']['ACCESS_KEY_ID']
-SECRET_ACCESS_KEY = config['Amazon S3 Bucket tyler9937']['SECRET_ACCESS_KEY']
-
-# ElephantSql Credentials
-USERNAME = config['ElephantSql Road Lane Detection Instance']['USERNAME']
-PASSWORD = config['ElephantSql Road Lane Detection Instance']['PASSWORD']
-DATABASE = config['ElephantSql Road Lane Detection Instance']['DATABASE']
-HOST = config['ElephantSql Road Lane Detection Instance']['HOST']
-
-# # Using Heroku Config varibles
 # # S3 Bucket Credentials
-# ACCESS_KEY_ID = os.environ['ACCESS_KEY_ID']
-# SECRET_ACCESS_KEY = os.environ['SECRET_ACCESS_KEY']
+# ACCESS_KEY_ID = config['Amazon S3 Bucket tyler9937']['ACCESS_KEY_ID']
+# SECRET_ACCESS_KEY = config['Amazon S3 Bucket tyler9937']['SECRET_ACCESS_KEY']
 
 # # ElephantSql Credentials
-# USERNAME = os.environ['USERNAME']
-# PASSWORD = os.environ['PASSWORD']
-# DATABASE = os.environ['DATABASE']
-# HOST = os.environ['HOST']
+# USERNAME = config['ElephantSql Road Lane Detection Instance']['USERNAME']
+# PASSWORD = config['ElephantSql Road Lane Detection Instance']['PASSWORD']
+# DATABASE = config['ElephantSql Road Lane Detection Instance']['DATABASE']
+# HOST = config['ElephantSql Road Lane Detection Instance']['HOST']
+
+# Using Heroku Config varibles
+# S3 Bucket Credentials
+ACCESS_KEY_ID = os.environ['ACCESS_KEY_ID']
+SECRET_ACCESS_KEY = os.environ['SECRET_ACCESS_KEY']
+
+# ElephantSql Credentials
+USERNAME = os.environ['USERNAME']
+PASSWORD = os.environ['PASSWORD']
+DATABASE = os.environ['DATABASE']
+HOST = os.environ['HOST']
 
 # # Connecting to Amazon S3 Bucket
 S3_CLIENT = boto3.client('s3', aws_access_key_id=ACCESS_KEY_ID, aws_secret_access_key=SECRET_ACCESS_KEY)
