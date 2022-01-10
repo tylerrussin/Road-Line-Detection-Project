@@ -276,4 +276,4 @@ def run_app():
     # Render test
     app.layout = html.Div('Hello World')
     
-    return app.run_server()
+    return app.server
