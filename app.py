@@ -18,7 +18,7 @@ from layout_structures.Meta_Tags import meta_tags
 from database_functions.Connect import connect
 
 # Addtional web pages for app
-from pages import process
+import process
 
 # For parsing credentials
 import configparser
