@@ -78,6 +78,7 @@ server = Flask(__name__)
 app = dash.Dash(__name__, server = server, external_stylesheets=external_stylesheets, meta_tags=meta_tags)
 app.config.suppress_callback_exceptions = True
 app.title = 'Road Lane Detection App' # Browser Title
+server = app.server
 
 
 # PostgresSQL Data Base call for bringing in video data
