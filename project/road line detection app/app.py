@@ -31,12 +31,22 @@ from dash.dependencies import Input, Output
 
 from flask import Flask, Response
 
+import psycopg2
+
 
 # Acessing Credentials
 config = configparser.ConfigParser()
 config.read('../credentials/credentials.ini')
+
+# S3 Bucket Credentials
 ACCESS_KEY_ID = config['Amazon S3 Bucket tyler9937']['ACCESS_KEY_ID']
 SECRET_ACCESS_KEY = config['Amazon S3 Bucket tyler9937']['SECRET_ACCESS_KEY']
+
+# ElephantSql Credentials
+USERNAME = config['ElephantSql Road Lane Detection Instance']['USERNAME']
+PASSWORD = config['ElephantSql Road Lane Detection Instance']['PASSWORD']
+DATABASE = config['ElephantSql Road Lane Detection Instance']['DATABASE']
+HOST = config['ElephantSql Road Lane Detection Instance']['HOST']
 
 # Connecting to Amazon S3 Bucket
 S3_CLIENT = boto3.client('s3', aws_access_key_id=ACCESS_KEY_ID, aws_secret_access_key=SECRET_ACCESS_KEY)
@@ -51,10 +61,58 @@ app.config.suppress_callback_exceptions = True # see https://dash.plot.ly/urls
 app.title = 'Tanzanian Ministry of Water Data Analysis' # appears in browser title bar
 
 
-def process_stream(mask_type, width, height):
+def connect(DATABASE, USERNAME, PASSWORD, HOST):
+    """ Connect to the PostgreSQL database server """
+    elephantsql_client = None
+    try:
+        # connect to the PostgreSQL server
+        print('Connecting to the PostgreSQL database...')
+
+        # Connect to ElephantSQL-hosted PostgreSQL
+        elephantsql_client = psycopg2.connect(dbname=DATABASE, user=USERNAME, password=PASSWORD, host=HOST)
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        sys.exit(1)
+    return elephantsql_client
+
+def get_scene_names():
+    # Creating the connection to database
+    elephantsql_client = connect(DATABASE, USERNAME, PASSWORD, HOST)
+
+    # A "cursor", a structure to iterate over db records to perform queries
+    cur = elephantsql_client.cursor()
+
+    command = '''
+    SELECT scene FROM road_data_table
+    '''
+
+    # Execute commands in order
+    cur.execute(command)
+
+    scene_names = []
+    scene_list = cur.fetchall()
+    for tup in scene_list:
+        scene_names.append({'label': tup[0], 'value': tup[0]})
+
+
+
+    # Close communication with the PostgreSQL database server
+    cur.close()
+
+    # Commit the changes
+    elephantsql_client.commit()
+
+    # Close the connection
+    elephantsql_client.close()
+    print('Connection is closed.')
+    return scene_names
+
+
+def process_stream(mask_type, width, height, test):
     # Fetching URL stream from amazon s3 bucket
     url = S3_CLIENT.generate_presigned_url('get_object', 
-                                           Params = {'Bucket': BUCKET_NAME, 'Key': TEMP_KEY}, 
+                                           Params = {'Bucket': BUCKET_NAME, 'Key': test}, 
                                            ExpiresIn = 30) #this url will be available for 600 seconds
 
     # Importing the video
@@ -125,36 +183,39 @@ def process_stream(mask_type, width, height):
                 yield (b'--frame\r\n'
                         b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
             except Exception as e:
-                pass
+                resized = resize(frame, width, height)
+                frame = resized
+                # Preparing for export
+                ret, buffer = cv2.imencode('.jpg', frame)
+                frame = buffer.tobytes()
+                yield (b'--frame\r\n'
+                        b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
             
         else:
             pass
 
 
-@server.route('/video_stream_predict_lines')
-def video_stream_predict_lines():
-    return Response(process_stream('predict_lines', 800, 600), mimetype='multipart/x-mixed-replace; boundary=frame')
+@server.route('/video_stream_predict_lines/<test>')
+def video_stream_predict_lines(test):
 
-@server.route('/video_stream_edge_detection')
-def video_stream_edge_detection():
-    return Response(process_stream('edge_detection', 400, 300), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(process_stream('predict_lines', 800, 600, test), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@server.route('/video_stream_original')
-def video_stream_original():
-    return Response(process_stream('original', 400, 300), mimetype='multipart/x-mixed-replace; boundary=frame')
+# @server.route('/video_stream_edge_detection')
+# def video_stream_edge_detection():
+#     return Response(process_stream('edge_detection', 400, 300), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+# @server.route('/video_stream_original')
+# def video_stream_original():
+#     return Response(process_stream('original', 400, 300), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 quantity_dropdown = html.Div(
     [
         
         dcc.Dropdown(
             id='quantity_dropdown',
-            options=[
-                {'label': 'dry', 'value': 0},
-                {'label': 'enough', 'value': 1},
-                {'label': 'insufficient', 'value': 2},
-                {'label': 'seasonal', 'value': 3}
-            ],
-            value=1
+            options=get_scene_names(),
+            value='scene_1.mp4'
         ),
     ]
 )
@@ -169,15 +230,17 @@ column1 = dbc.Col(
             This application describes the competition that was entered, the process for  how modeling was done, and has an interactive model demo
             """
         ),
+        quantity_dropdown
 
     ],
 )
 
 column2 = dbc.Col(
     [
-       html.Div(html.Img(src="/video_stream_predict_lines")),
-       html.Div(html.Img(src="/video_stream_edge_detection"),style={'float': 'left'}),
-       html.Div(html.Img(src="/video_stream_original", style={'float': 'right'})),
+       html.Div(html.Img(id='output')),
+    #    html.Div(html.Img(src="/video_stream_edge_detection"),style={'float': 'left'}),
+    #    html.Div(html.Img(src="/video_stream_original", style={'float': 'right'})),
+
     ]
 )
 
@@ -190,6 +253,14 @@ app.layout = html.Div([
     dbc.Container(id='page-content', className='mt-4'),
     footer               
 ])
+
+# URL routing
+@app.callback(Output('output', 'src'),
+              [Input('quantity_dropdown', 'value')])
+
+def play_video(scene_name):
+    
+    return "/video_stream_predict_lines/" + scene_name
 
 # URL routing
 @app.callback(Output('page-content', 'children'),

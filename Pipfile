@@ -9,6 +9,8 @@ dash = "*"
 dash-bootstrap-components = "*"
 pandas = "*"
 boto3 = "*"
+sqlalchemy = "*"
+psycopg2 = "*"
 
 [dev-packages]
 
