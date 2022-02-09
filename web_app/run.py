@@ -41,32 +41,17 @@ from dash.dependencies import Input, Output
 # Backend flask import for video stream
 from flask import Flask, Response
 
-# For Use when working locally
 
-# # Acessing Credentials
-# config = configparser.ConfigParser()
-# config.read('credentials/credentials.ini')
-
-# # S3 Bucket Credentials
-# ACCESS_KEY_ID = config['Amazon S3 Bucket tyler9937']['ACCESS_KEY_ID']
-# SECRET_ACCESS_KEY = config['Amazon S3 Bucket tyler9937']['SECRET_ACCESS_KEY']
-
-# # ElephantSql Credentials
-# USERNAME = config['ElephantSql Road Lane Detection Instance']['USERNAME']
-# PASSWORD = config['ElephantSql Road Lane Detection Instance']['PASSWORD']
-# DATABASE = config['ElephantSql Road Lane Detection Instance']['DATABASE']
-# HOST = config['ElephantSql Road Lane Detection Instance']['HOST']
-
-# Using Heroku Config varibles
 # S3 Bucket Credentials
-ACCESS_KEY_ID = os.environ['ACCESS_KEY_ID']
-SECRET_ACCESS_KEY = os.environ['SECRET_ACCESS_KEY']
+ACCESS_KEY_ID = os.getenv('ACCESS_KEY_ID')
+SECRET_ACCESS_KEY = os.getenv('SECRET_ACCESS_KEY')
 
 # ElephantSql Credentials
-USERNAME = os.environ['USERNAME']
-PASSWORD = os.environ['PASSWORD']
-DATABASE = os.environ['DATABASE']
-HOST = os.environ['HOST']
+USERNAME = os.getenv('USERNAME')
+PASSWORD = os.getenv('PASSWORD')
+DATABASE = os.getenv('DATABASE')
+HOST = os.getenv('HOST')
+
 
 # # Connecting to Amazon S3 Bucket
 S3_CLIENT = boto3.client('s3', aws_access_key_id=ACCESS_KEY_ID, aws_secret_access_key=SECRET_ACCESS_KEY)
@@ -120,7 +105,7 @@ def process_stream(mask_type, width, height, test):
     # Fetching URL stream from amazon s3 bucket
     url = S3_CLIENT.generate_presigned_url('get_object', 
                                         Params = {'Bucket': BUCKET_NAME, 'Key': test}, 
-                                        ExpiresIn = 45) #this url will be available for 600 seconds
+                                        ExpiresIn = 180) #this url will be available for 600 seconds
 
     # Importing the video
     video = cv2.VideoCapture(url)
@@ -269,8 +254,6 @@ def play_video(scene_name):
 def display_page(pathname):
     if pathname == '/':
         return layout
-    elif pathname == '/process':
-        return process.layout
     else:
         return dcc.Markdown('## Page not found')
 
