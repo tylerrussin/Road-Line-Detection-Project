@@ -4,12 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-opencv-python = "*"
 dash = "*"
 dash-bootstrap-components = "*"
 boto3 = "*"
 psycopg2 = "*"
 gunicorn = "*"
+opencv-python-headless = "==4.2.0.32"
 
 [dev-packages]
 
