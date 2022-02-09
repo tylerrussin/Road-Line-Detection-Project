@@ -9,6 +9,7 @@ dash = "*"
 dash-bootstrap-components = "*"
 boto3 = "*"
 psycopg2 = "*"
+gunicorn = "*"
 
 [dev-packages]
 
