@@ -1,4 +1,5 @@
 import psycopg2
+import sys
 
 def connect(DATABASE, USERNAME, PASSWORD, HOST):
     """ Connect to the PostgreSQL database server """
