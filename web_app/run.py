@@ -105,7 +105,7 @@ def process_stream(mask_type, width, height, test):
     # Fetching URL stream from amazon s3 bucket
     url = S3_CLIENT.generate_presigned_url('get_object', 
                                         Params = {'Bucket': BUCKET_NAME, 'Key': test}, 
-                                        ExpiresIn = 45) #this url will be available for 600 seconds
+                                        ExpiresIn = 180) #this url will be available for 600 seconds
 
     # Importing the video
     video = cv2.VideoCapture(url)
