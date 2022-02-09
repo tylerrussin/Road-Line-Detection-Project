@@ -5,9 +5,7 @@ import dash_bootstrap_components as dbc
 navbar = dbc.NavbarSimple(
     brand='Road Line Detection OpenCV',
     brand_href='/', 
-    children=[
-        dbc.NavItem(dcc.Link('Process', href='/process', className='nav-link')), 
-    ],
+    children=[],
     sticky='top',
     color='light', 
     light=True, 

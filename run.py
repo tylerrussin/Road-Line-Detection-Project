@@ -17,9 +17,6 @@ from layout_structures.Meta_Tags import meta_tags
 # Database connection functions
 from database_functions.Connect import connect
 
-# Addtional web pages for app
-import process
-
 # For parsing credentials
 import configparser
 
@@ -42,39 +39,36 @@ from dash.dependencies import Input, Output
 from flask import Flask, Response
 
 # For Use when working locally
-
 # Acessing Credentials
-config = configparser.ConfigParser()
-config.read('credentials/credentials.ini')
+# config = configparser.ConfigParser()
+# config.read('credentials/credentials.ini')
 
 # S3 Bucket Credentials
-ACCESS_KEY_ID = config['Amazon S3 Bucket tyler9937']['ACCESS_KEY_ID']
-SECRET_ACCESS_KEY = config['Amazon S3 Bucket tyler9937']['SECRET_ACCESS_KEY']
+# ACCESS_KEY_ID = config['Amazon S3 Bucket tyler9937']['ACCESS_KEY_ID']
+# SECRET_ACCESS_KEY = config['Amazon S3 Bucket tyler9937']['SECRET_ACCESS_KEY']
 
 # ElephantSql Credentials
-USERNAME = config['ElephantSql Road Lane Detection Instance']['USERNAME']
-PASSWORD = config['ElephantSql Road Lane Detection Instance']['PASSWORD']
-DATABASE = config['ElephantSql Road Lane Detection Instance']['DATABASE']
-HOST = config['ElephantSql Road Lane Detection Instance']['HOST']
+# USERNAME = config['ElephantSql Road Lane Detection Instance']['USERNAME']
+# PASSWORD = config['ElephantSql Road Lane Detection Instance']['PASSWORD']
+# DATABASE = config['ElephantSql Road Lane Detection Instance']['DATABASE']
+# HOST = config['ElephantSql Road Lane Detection Instance']['HOST']
 
-# # Using Heroku Config varibles
-# # S3 Bucket Credentials
-# ACCESS_KEY_ID = os.environ['ACCESS_KEY_ID']
-# SECRET_ACCESS_KEY = os.environ['SECRET_ACCESS_KEY']
+# Using Heroku Config varibles
+# S3 Bucket Credentials
+ACCESS_KEY_ID = os.environ['ACCESS_KEY_ID']
+SECRET_ACCESS_KEY = os.environ['SECRET_ACCESS_KEY']
 
-# # ElephantSql Credentials
-# USERNAME = os.environ['USERNAME']
-# PASSWORD = os.environ['PASSWORD']
-# DATABASE = os.environ['DATABASE']
-# HOST = os.environ['HOST']
+# ElephantSql Credentials
+USERNAME = os.environ['USERNAME']
+PASSWORD = os.environ['PASSWORD']
+DATABASE = os.environ['DATABASE']
+HOST = os.environ['HOST']
 
 # # Connecting to Amazon S3 Bucket
 S3_CLIENT = boto3.client('s3', aws_access_key_id=ACCESS_KEY_ID, aws_secret_access_key=SECRET_ACCESS_KEY)
 BUCKET_NAME = 'road-line-detection-scenes' 
 
-
 # Creating Flask and Dash servers
-
 server = Flask(__name__)
 app = dash.Dash(__name__,server=server, external_stylesheets=external_stylesheets, meta_tags=meta_tags)
 app.config.suppress_callback_exceptions = True
@@ -82,10 +76,9 @@ app.title = 'Road Lane Detection App' # Browser Title
 server_run = app.server
     
     
-
-
-# PostgresSQL Data Base call for bringing in video data
 def get_scene_names():
+    '''PostgresSQL Data Base call for bringing in video data'''
+
     # Creating the connection to database
     elephantsql_client = connect(DATABASE, USERNAME, PASSWORD, HOST)
 
@@ -115,8 +108,10 @@ def get_scene_names():
     print('Connection is closed.')
     return scene_names
 
-# Amazon S3 Bucket video streaming and OpenCV Video Processing
+
 def process_stream(mask_type, width, height, test):
+    '''Amazon S3 Bucket video streaming and OpenCV Video Processing'''
+
     # Fetching URL stream from amazon s3 bucket
     url = S3_CLIENT.generate_presigned_url('get_object', 
                                         Params = {'Bucket': BUCKET_NAME, 'Key': test}, 
@@ -228,7 +223,6 @@ column1 = dbc.Col(
     [
         dcc.Markdown(
             """
-        
             ## Model Overview
             In this web application, we demonstrate road lane identification using OpenCV tools such as edge detection, and Hough line detection. We find that our implementation is effective in perfect weather and road conditions. The model struggles with sun glare, shadows, patchy roads, multiple lanes, and traffic. We consider this model a good baseline and look forward to further research in the field. The video data was collected by our team on western Los Angeles roads. The videos are being streamed from an Amazon S3 bucket and a PostgreSQL database hosted on Elephantsql. Below you can select different video scenes and observe how our model performed. The two blue lines are our model's predictionand are being applied in real time.
             """
@@ -269,8 +263,6 @@ def play_video(scene_name):
 def display_page(pathname):
     if pathname == '/':
         return layout
-    elif pathname == '/process':
-        return process.layout
     else:
         return dcc.Markdown('## Page not found')
 
