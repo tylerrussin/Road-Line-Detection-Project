@@ -224,7 +224,7 @@ column1 = dbc.Col(
         dcc.Markdown(
             """
             ## Model Overview
-            In this web application, we demonstrate road lane identification using OpenCV tools such as edge detection and Hough line detection. We find that our implementation is effective in perfect weather and road conditions. The model struggles with sun glare, shadows, patchy roads, multiple lanes, and traffic. We consider this model a good baseline and look forward to further research in the field. The video data was collected by our team on western Los Angeles roads. The videos are being streamed from an Amazon S3 bucket and a PostgreSQL database hosted on Elephantsql. Below you can select different video scenes and observe how our model performed. The two blue lines are our model's prediction and are being applied in real time.
+            This web application aims to detect road lines using OpenCV's image processing, edge detection, and hough lines identification. Video data was collected by a team in western Los Angeles. The data is streamed from Amazon S3 Buckets, video information is stored in a SQL database, and line detection is calculated in real-time. The two blue lines masked onto the video are the predicted road lines. To use the tool select a scene from the dropdown menu below.
             """
         ),
         quantity_dropdown
