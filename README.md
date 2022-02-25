@@ -11,16 +11,26 @@ This project aims to implement a baseline method of road line detection. The pro
 ### Usage
 
 **Python Notebooks**
+
 Located in the “notebooks” directory of this repository are the following “.ipynb” files:
+
 -	road_lane_detection_process.ipynb
 -	database_connect.ipynb
+
 These files explore video processing and database creation. The “road_lane_detection_process.ipynb” file contains work on road data processing and road line prediction. The “database_connect.ipynb” contains work done on database creation and storing known information about each video scene.
+
 **Interactive Web Application**
+
 For demonstration purposes, the outlined process developed within the python notebooks has been implemented into an interactive Dash application hosted on Heroku. The application live streams video scenes from Amazon S3 buckets based on URL information stored in the created SQL database. The road line detection process is implemented on the video feed in real-time. Each video clip is 30 seconds long.
+
 The deployed detection application can be interacted with [Here](https://road-lane-detection-app.herokuapp.com/)
+
 **SQL Database**
+
 The SQL database is hosted on [ElephantSQL](https://www.elephantsql.com/) and stores one table(```“road_data_table”```) holding twelve fields (features). Each entry in the table represents a video scene and each feature describes that scene’s observed values. The stored features in this database are ```”id”, “scene”, “weather”, “time_of_day”, “total_revenue”, “shadows”, “road_type”, “traffic”, “line_condition”, “lane_count”, “pavement”, and “detection_preformence”```. Each entry value is a string character with a length limit of 20. The id feature is a serial primary key.
+
 # Overview of Line Detection Process
+
 **Data Collection**
 
 Before line detection processing begins video footage is collected. For analysis, various methods of data collection are tested including real-world and virtual-world data.
