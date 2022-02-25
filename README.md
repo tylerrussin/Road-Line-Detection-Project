@@ -23,6 +23,8 @@ These files explore video processing and database creation. The “road_lane_det
 
 For demonstration purposes, the outlined process developed within the python notebooks has been implemented into an interactive Dash application hosted on Heroku. The application live streams video scenes from Amazon S3 buckets based on URL information stored in the created SQL database. The road line detection process is implemented on the video feed in real-time. Each video clip is 30 seconds long.
 
+**Please allow roughly 30 seconds for the server to boot up when clicking the link below**
+
 The deployed detection application can be interacted with [Here](https://road-lane-detection-app.herokuapp.com/)
 
 **SQL Database**
